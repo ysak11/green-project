@@ -2,13 +2,15 @@ import {
   UPDATE_AREA_LIST,
   UPDATE_WEATHER_INFO,
   GET_RATIO_LIST,
-  UPDATE_MESSAGE_LIST
+  UPDATE_MESSAGE_LIST,
+  UPDATE_DEVICE_LIST
 } from './mutation-type';
 
 import {
   reqAreaList,
   reqRatioList,
-  reqMessageList
+  reqMessageList,
+  reqDeviceList
 } from '@/api';
 
 import {nowWeather} from '@/api/weather';
@@ -67,5 +69,15 @@ export default {
       const list = result.data;
       commit(UPDATE_MESSAGE_LIST, list);
     }
-  }
+  },
+
+  //异步获取设备列表
+  async reqDeviceList({commit}) {
+    const result = await reqDeviceList();
+    //提交mutation更新数据
+    if(result.status === 0) {
+      const list = result.data;
+      commit(UPDATE_DEVICE_LIST, list);
+    }
+  },
 }

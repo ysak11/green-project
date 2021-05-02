@@ -8,7 +8,8 @@ import {
   UPDATE_WEATHER_INFO,
   GET_RATIO_LIST,
   CONTROL_AREA_INFO,
-  UPDATE_MESSAGE_LIST
+  UPDATE_MESSAGE_LIST,
+  UPDATE_DEVICE_LIST
 } from './mutation-type'
 
 //对象中的属性名使用的是变量，所以要用[]括起来
@@ -63,5 +64,10 @@ export default {
   //更新信息列表
   [UPDATE_MESSAGE_LIST] (state, list) {
     state.messageList = list;
+  },
+
+  //更新设备列表
+  [UPDATE_DEVICE_LIST] (state, list) {
+    state.deviceList = list;
   }
 }

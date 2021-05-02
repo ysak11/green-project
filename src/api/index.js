@@ -77,3 +77,19 @@ export const reqUpdateMessage = (obj) => ajax(BASEURL + '/message/update', obj, 
 
 //查找信息
 export const reqFindMessage = () => ajax(BASEURL + '/message/update', obj, 'POST');
+
+
+//添加新设备
+export const reqAddDevice = (name, type, setting, toArea) => ajax(BASEURL + '/device/add', {name, type, setting, toArea}, 'POST');
+
+//更新设备数据
+export const reqUpdateDevice = (device) => ajax(BASEURL + '/device/update', device, 'POST');
+
+//删除设备
+export const reqDeleteDevice = (id) => ajax(BASEURL + '/device/delete', {id}, 'POST');
+
+//获取设备列表
+export const reqDeviceList = () => ajax(BASEURL + '/device/list');
+
+//模糊查询设备列表
+export const reqFuzzyDevice = (keyword) => ajax(BASEURL + '/device/fuzzySearch', {keyword}, 'POST');

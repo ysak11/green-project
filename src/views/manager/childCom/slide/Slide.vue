@@ -9,31 +9,37 @@
 
     <div class="list">
       <div class="user" @click="skip('/manager/user')" :class="{on: '/manager/user'===$route.path}">
-        <svg class="icon" aria-hidden="true" @click="goBack">
+        <svg class="icon" aria-hidden="true">
           <use xlink:href="#icon-yonghuguanli"></use>
         </svg>
         用户管理
       </div>
       <div class="worker" @click="skip('/manager/worker')" :class="{on: '/manager/worker'===$route.path}">
-        <svg class="icon" aria-hidden="true" @click="goBack">
+        <svg class="icon" aria-hidden="true">
           <use xlink:href="#icon-user"></use>
         </svg>
         职工管理
       </div>
       <div class="setting" @click="skip('/manager/setting')" :class="{on: '/manager/setting'===$route.path}">
-        <svg class="icon" aria-hidden="true" @click="goBack">
+        <svg class="icon" aria-hidden="true">
           <use xlink:href="#icon-shezhi"></use>
         </svg>
         区域设置
       </div>
+      <div class="auto" @click="skip('/manager/auto')" :class="{on: '/manager/auto'===$route.path}">
+        <svg class="icon" aria-hidden="true">
+          <use xlink:href="#icon-gongju"></use>
+        </svg>
+        自动灌溉设备
+      </div>
       <div class="temperature" @click="skip('/manager/temperature')" :class="{on: '/manager/temperature'===$route.path}">
-        <svg class="icon" aria-hidden="true" @click="goBack">
+        <svg class="icon" aria-hidden="true">
           <use xlink:href="#icon-wendu"></use>
         </svg>
         温度比率调整
       </div>
       <div class="time" @click="skip('/manager/time')" :class="{on: '/manager/time'===$route.path}">
-        <svg class="icon" aria-hidden="true" @click="goBack">
+        <svg class="icon" aria-hidden="true">
           <use xlink:href="#icon-shijian"></use>
         </svg>
         时间比率调整

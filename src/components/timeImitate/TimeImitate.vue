@@ -5,6 +5,7 @@
       <div class="header">
         <button @click="imitateHour">模拟一个小时</button>
         <button @click="imitateDay">模拟一天</button>
+        <button @click="autoWater" style="margin-left: 50px">自动灌溉： {{autoControl ? '开' : '关'}}</button>
         <span class="text">(面积 * 降水量) - (每日耗水量 * 1/24 * 时间比率 * 温度比率)</span>
       </div>
 
@@ -30,24 +31,42 @@ export default {
   name: "TimeImitate",
   data() {
     return {
-      timeRatios: null,     //时间比率
-      temRatios: null,       //温度比率
+      timeRatios: null,       //时间比率
+      temRatios: null,        //温度比率
+      autoControl: true,     //自动灌溉开关
     }
   },
   computed: {
-    ...mapState(['areaList', 'weatherInfo', 'ratioList']),
+    ...mapState(['areaList', 'weatherInfo', 'ratioList', 'deviceList']),
     //控制水量上限和小数个数
     waterQuantity() {
       return (Quantity, top) => {
         let water = Number(Quantity).toFixed(2);
         return water <= Number(top) ? water : top;
       }
+    },
+
+
+    equipAreaList() {
+      let len = this.areaList.length;
+      
+      for(let i = 0; i < len; i++) {
+        let temp = this.deviceList.filter(item => item.toArea === this.areaList[i].name);
+        if(temp.length !== 0) {
+          this.areaList[i].equip = temp;
+        } else {
+          this.areaList[i].equip = null;
+        }
+      }
+      return this.areaList;
     }
   },
   created() {
     //获得时间和温度的比率数组
     this.timeRatios = this.ratioList.find((item) => item.name === 'time');
     this.temRatios = this.ratioList.find((item) => item.name === 'temperature');
+    //获取设备列表
+    this.$store.dispatch('reqDeviceList');
   },
   methods: {
     //关闭窗口
@@ -71,12 +90,24 @@ export default {
       const temRatio = this.temRatios.ratio[tem + 20];
       // console.log(this.timeRatio + "   " + this.temRatio);
       
-      this.areaList.forEach(item => {
+      this.equipAreaList.forEach(item => {
         //耗水量      （面积 * 降水量） - （每日耗水量 * 1/24 * 时间比率 * 温度比率)
         const consume = (item.area * precip) - (item.hourConsume * (1 / 24) * timeRatio * temRatio);
         // const consume = (item.area * 1) - (item.hourConsume * (1 / 24) * timeRatio * temRatio);
+        console.log(consume);
         
-        const nowWater = Number(item.waterQuantity) + consume;
+        let nowWater = Number(item.waterQuantity) + consume;
+        
+        //如果低于预警水量且配备有自动灌溉设备则调用设备自动灌溉，还需要开启自动灌溉开关
+        if(this.autoControl && nowWater <= parseInt(item.warnValue) && item.equip) {
+          console.log(item.equip);
+          
+          item.equip.forEach(item => {
+            nowWater += parseInt(item.setting);
+          })
+        }
+
+
         //最低水量需大于等于0,最高水量小于等于top
         item.waterQuantity = nowWater >= 0 ? nowWater : 0;
         item.waterQuantity = item.waterQuantity <= item.waterTop ? Number(item.waterQuantity) : Number(item.waterTop);
@@ -107,8 +138,19 @@ export default {
           //耗水量      （面积 * 降水量） - （每日耗水量 * 1/24 * 时间比率 * 温度比率)
           const consume = (item.area * precip) - (item.hourConsume * (1 / 24) * timeRatio * temRatio);
           // const consume = (item.area * 1) - (item.hourConsume * (1 / 24) * timeRatio * temRatio);
+          console.log(consume);
           
-          const nowWater = Number(item.waterQuantity) + consume;
+          let nowWater = Number(item.waterQuantity) + consume;
+
+          //如果低于预警水量且配备有自动灌溉设备则调用设备自动灌溉，还需要开启自动灌溉开关
+          if(this.autoControl && nowWater <= parseInt(item.warnValue) && item.equip) {
+            console.log(item.equip);
+            
+            item.equip.forEach(item => {
+              nowWater += parseInt(item.setting);
+            })
+          }
+
           //最低水量需大于等于0,最高水量小于等于top
           item.waterQuantity = nowWater >= 0 ? nowWater : 0;
           item.waterQuantity = item.waterQuantity <= item.waterTop ? Number(item.waterQuantity) : Number(item.waterTop);
@@ -130,6 +172,10 @@ export default {
     },
 
 
+    //自动灌溉开关
+    autoWater() {
+      this.autoControl = !this.autoControl;
+    }
   }
 }
 </script>

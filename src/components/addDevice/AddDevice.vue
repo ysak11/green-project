@@ -1,39 +1,26 @@
 <template>
   <div class="shape">
     <div class="add-info">
-      <h3>详细设定</h3>
+      <h3>设置设备</h3>
       <form action="" >
         <div class="message">
-          <div>区域别名:</div>
+          <div>设备名:</div>
           <input type="text" v-model="name">
         </div>
         <div class="message">
-          <div>种类:</div>
-          <select v-model="type">
-            <option value="行道树">行道树</option>
-            <option value="草坪">草坪</option>
-            <option value="观赏植株">观赏植株</option>
+          <div>设备型号:</div>
+          <input type="text" v-model="type">
+        </div>
+        <div class="message">
+          <div>单次灌溉值:</div>
+          <input type="text" v-model="setting">
+        </div>
+        <div class="message">
+          <div>所在区域:</div>
+          <select v-model="toArea">
+            <option value="" selected></option>
+            <option v-for="item in areaList" :key="item._id" :value="item.name">{{item.name}}</option>
           </select>
-        </div>
-        <div class="message">
-          <div>具体植株:</div>
-          <input type="text" v-model="plant">
-        </div>
-        <div class="message">
-          <div>水量报警值:</div>
-          <input type="text" v-model="warnValue">
-        </div>
-        <div class="message">
-          <div>水量上限:</div>
-          <input type="text" v-model="waterTop">
-        </div>
-        <div class="message">
-          <div>现在水量:</div>
-          <input type="text" v-model="waterQuantity">
-        </div>
-        <div class="message">
-          <div>每日耗水量:(以温度20℃为参照)</div>
-          <input type="text" v-model="hourConsume"> 
         </div>
       </form>
       <div class="bottom">
@@ -45,86 +32,74 @@
 </template>
 
 <script>
-import {reqAddArea, reqArea} from '@/api';
+import { reqAddDevice, reqUpdateDevice } from '@/api';
+
+import {mapState} from 'vuex';
 
 export default {
-  name: "AddInfo",
+  name: "AddDevice",
   props: {
     //新增模式还是修改模式
     mode: {
       type: String,
       default: 'add'
     },
-    //修改模式时传入的区域对象
-    area: {
+    //修改模式时传入的设备对象
+    device: {
       type: Object,
     },
-    //新增模式传入的绘图路径
-    path: {
-      type: Array,
-    }
   },
   data() {
     return {
-      name: null,          //区域别名
-      type: null,          //绿化种类
-      plant: null,         //具体植株
-      warnValue: null,     //水量报警值
-      waterTop: null,      //水量存储上限
-      waterQuantity: null, //现在水量
-      hourConsume: null,   //每小时耗水量（以温度20℃为参考)
-      areaObj: null        //修改模式下的区域对象
+      name: null,             //设备名
+      type: null,             //设备型号
+      setting: null,          //单次灌溉值
+      toArea: null,           //所在区域
+      deviceObj: null,        //设备对象(修改模式)
     }
   },
   created() {
+    //获取区域列表
+    this.$store.dispatch('getAreaList');
     //如果是修改模式，则将数据传递给组件的data
     if(this.mode === 'modify') {
-      this.name = this.area.name;
-      this.type = this.area.type;
-      this.plant = this.area.plant;
-      this.warnValue = this.area.warnValue;
-      this.waterTop = this.area.waterTop;
-      this.waterQuantity = this.area.waterQuantity;
-      this.hourConsume = this.area.hourConsume;
+      this.name = this.device.name;
+      this.type = this.device.type;
+      this.setting = this.device.setting;
+      this.toArea = this.device.toArea;
 
       //props的值不能直接修改，所以得转存成data里的数据
-      this.areaObj = this.area;
+      this.deviceObj = this.device;
     }
+  },
+  computed: {
+    ...mapState(['areaList'])
   },
   methods: {
     //点击确定事件
     async confirmClick() {
       //所有信息都填写完成了
-      if(this.name && this.type && this.plant && this.warnValue && this.waterTop && this.waterQuantity && this.hourConsume) {
+      if(this.name && this.type && this.setting) {
         //新增模式发送请求
         if(this.mode === 'add') {
-          const result = await reqAddArea(this.path, this.name, this.type, this.plant, this.warnValue, this.waterTop,  this.waterQuantity, this.hourConsume);
+          const result = await reqAddDevice(this.name, this.type, this.setting, this.toArea);
 
           if(result.status === 0) {
-
-            this.$message.show('添加区域完成');
-            //更新区域列表
-            await this.$store.dispatch('getAreaList');
-            
+            this.$message.show('添加设备完成');
             this.$emit('closeWindow');
           } else {
             this.$message.show(result.msg);
           }
         } else {
           //将修改的数据重新赋予area对象
-          this.areaObj.name = this.name;
-          this.areaObj.type = this.type;
-          this.areaObj.plant = this.plant;
-          this.areaObj.warnValue = this.warnValue;
-          this.areaObj.waterTop = this.waterTop;
-          this.areaObj.waterQuantity = this.waterQuantity;
-          this.areaObj.hourConsume = this.hourConsume;
+          this.deviceObj.name = this.name;
+          this.deviceObj.type = this.type;
+          this.deviceObj.setting = this.setting;
+          this.deviceObj.toArea = this.toArea;
           //修改模式
-          const result = await reqArea(this.area);
+          const result = await reqUpdateDevice(this.deviceObj);
           if(result.status === 0) {
-            this.$message.show('区域信息修改完成');
-            //更新区域列表
-            await this.$store.dispatch('getAreaList');
+            this.$message.show('设备数据修改完成');
             this.$emit('closeWindow');
           } else {
             this.$message.show(result.msg);
@@ -137,7 +112,7 @@ export default {
     },
 
     //点击取消事件
-    cancelClick() {
+    async cancelClick() {
       //关闭该窗口
       this.$emit('closeWindow');
     }
@@ -162,7 +137,7 @@ export default {
     left: 50%;
     transform: translate(-50%, -50%);
     width: 270px;
-    height: 540px;
+    height: 370px;
     background-color: #2c3e50;
     border-radius: 8px;
     color: #bdc3c7;

@@ -29,3 +29,7 @@ export const CONTROL_AREA_INFO = 'control_area_info';
 
 //更新信息列表
 export const UPDATE_MESSAGE_LIST = 'update_message_list';
+
+
+//更新设备列表
+export const UPDATE_DEVICE_LIST = 'update_device_list';

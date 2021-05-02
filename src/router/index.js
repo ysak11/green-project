@@ -8,6 +8,7 @@ const Worker = () => import('views/manager/childCom/worker/Worker');
 const Setting = () => import('views/manager/childCom/setting/Setting');
 const Temperature = () => import('views/manager/childCom/temperature/Temperature');
 const Time = () => import('views/manager/childCom/time/Time');
+const Auto = () => import('views/manager/childCom/auto/Auto');
 
 Vue.use(VueRouter);
 
@@ -54,6 +55,11 @@ const routes = [
         path: '/manager/time',
         name: 'Time',
         component: Time
+      },
+      {
+        path: '/manager/auto',
+        name: 'Auto',
+        component: Auto
       },
     ]
   }

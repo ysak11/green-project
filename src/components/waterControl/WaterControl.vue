@@ -3,13 +3,24 @@
     
     <div class="content">
 
-      <div class="message" v-for="item in areaList" :key="item._id">
+      <div class="header">
+        <span class="areaName">名称</span>
+        <div>种类</div>
+        <div>当前水量</div>
+        <div>水量报警值</div>
+        <div>水量上限</div>
+        <div>灌溉设备</div>
+        <span class="action">操作</span>
+      </div>
+
+      <div class="message" v-for="item in showList" :key="item._id">
         <span class="name">{{item.name}}</span>
-        <div>种类: {{item.type}}</div>
-        <div :class="{'warn': item.lowWarn}">当前水量: {{item.waterQuantity}}</div>
-        <div>水量报警值: {{item.warnValue}}</div>
-        <div>水量上限: {{item.waterTop}}</div>
-        <button class="btn-water" @click="openInput(item)">浇水</button>
+        <div>{{item.type}}</div>
+        <div :class="{'warn': item.lowWarn}">{{item.waterQuantity}}</div>
+        <div>{{item.warnValue}}</div>
+        <div>{{item.waterTop}}</div>
+        <div :class="{'warn':item.equip === '暂无'}">{{item.equip}}</div>
+        <button class="btn-water" @click="openInput(item)">灌溉</button>
       </div>
 
     </div>
@@ -44,7 +55,24 @@ export default {
     }
   },
   computed: {
-    ...mapState(['areaList', 'userInfo'])
+    ...mapState(['areaList', 'userInfo', 'deviceList']),
+    showList() {
+      let len = this.areaList.length;
+      
+      for(let i = 0; i < len; i++) {
+        let temp = this.deviceList.filter(item => item.toArea === this.areaList[i].name);
+        console.log(temp);
+        if(temp.length !== 0) {
+          this.areaList[i].equip = temp[0].name;
+        } else {
+          this.areaList[i].equip = '暂无';
+        }
+      }
+      return this.areaList;
+    }
+  },
+  created() {
+    this.$store.dispatch('reqDeviceList');
   },
   methods: {
     //关闭窗口
@@ -132,6 +160,29 @@ export default {
     border-radius: 8px;
   }
 
+  .header {
+    display: flex;
+    margin-bottom: 12px;
+  }
+
+  .areaName {
+    width: 40px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .action {
+    width: 70px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .header div {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+  }
+
   .message {
     height: 40px;
     display: flex;
@@ -156,8 +207,10 @@ export default {
 
   .message div {
     flex: 1;
-    font-size: 14px;
+    font-size: 12px;
     padding-left: 15px;
+    display: flex;
+    justify-content: center;
   }
 
   .btn-water {

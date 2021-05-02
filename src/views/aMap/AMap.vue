@@ -68,7 +68,6 @@ export default {
               this.showItem = item;
               this.showMessage = true;
             }
-
           })
           
           //鼠标的移入移出事件
@@ -77,8 +76,6 @@ export default {
             this.showTip = true;
             //改变悬浮框显示的名称
             this.name = item.name;
-            //记录间隔的起始时间
-            // let pre = new Date().getTime();
 
             //记录起始坐标
             let firstX = e.originEvent.pageX;
@@ -89,14 +86,9 @@ export default {
             this.$refs.tip.style.left = firstX + 10 + 'px';
             this.$refs.tip.style.top = firstY + 20 + 'px';
             polygon.on('mousemove', (e) => {
-              // let now = new Date().getTime();
-              // if(now - pre >= 16) {
                 let x = e.originEvent.pageX - firstX;
                 let y = e.originEvent.pageY - firstY;
                 this.$refs.tip.style.transform = `translate(${x}px, ${y}px)`;
-              //   now = pre;
-              // }
-              
             });
 
             //恢复透明度到1
@@ -128,6 +120,7 @@ export default {
               fillColor: 'red'
             })
           }
+
 
           //查询有关该区域的预警消息
           const result = this.messageList.find(msg => msg.areaName === item.name && msg.status === 'warn');
@@ -194,6 +187,8 @@ export default {
       this.$store.dispatch('getAreaList');
       //获取比率列表
       this.$store.dispatch('getRatioList');
+      //更新设备列表
+      // this.$store.dispatch('reqDeviceList');
 
       //将地图实例和鼠标绘制工具发送给vuex
       this.$store.commit(INIT_MAP, map);

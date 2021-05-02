@@ -17,4 +17,6 @@ export default {
   showAreaInfo: true,
   //信息列表
   messageList: [],
+  //设备列表
+  deviceList: []
 }

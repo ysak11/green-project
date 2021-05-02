@@ -5,7 +5,7 @@
     </div>
     <div class="center">
         <span @click="backToCenter">回到原点</span>
-        <span @click="showWater" v-if="userInfo.permission >= '2'">区域水信息</span>
+        <span @click="showWater" v-if="userInfo.permission >= '2'">水量监控</span>
         <span @click="submitQuestion" v-if="userInfo.permission >= '2'" :class="{submitting: isSubmitting}" >问题上报</span>
         <span @click="addArea" v-if="userInfo.permission >= '3'" :class="{drawing: isDrawing}">添加绿化区域</span>
         <span @click="showInfo" v-if="userInfo.permission >= '3'">信息汇总</span>
