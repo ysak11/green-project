@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import { reqArea } from '@/api';
+import { reqArea, reqAddMessage, reqUpdateMessage } from '@/api';
 import { mapState } from 'vuex';
 
 export default {
@@ -37,7 +37,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(['areaList', 'weatherInfo', 'ratioList', 'deviceList']),
+    ...mapState(['areaList', 'weatherInfo', 'ratioList', 'deviceList', 'messageList']),
     //控制水量上限和小数个数
     waterQuantity() {
       return (Quantity, top) => {
@@ -94,7 +94,7 @@ export default {
         //耗水量      （面积 * 降水量） - （每日耗水量 * 1/24 * 时间比率 * 温度比率)
         const consume = (item.area * precip) - (item.hourConsume * (1 / 24) * timeRatio * temRatio);
         // const consume = (item.area * 1) - (item.hourConsume * (1 / 24) * timeRatio * temRatio);
-        console.log(consume);
+        // console.log(consume);
         
         let nowWater = Number(item.waterQuantity) + consume;
         
@@ -106,6 +106,9 @@ export default {
             nowWater += parseInt(item.setting);
           })
         }
+
+        //报警信息
+        this.sendMsg(item);
 
 
         //最低水量需大于等于0,最高水量小于等于top
@@ -151,6 +154,10 @@ export default {
             })
           }
 
+          //报警信息
+          this.sendMsg(item);
+          
+
           //最低水量需大于等于0,最高水量小于等于top
           item.waterQuantity = nowWater >= 0 ? nowWater : 0;
           item.waterQuantity = item.waterQuantity <= item.waterTop ? Number(item.waterQuantity) : Number(item.waterTop);
@@ -175,6 +182,57 @@ export default {
     //自动灌溉开关
     autoWater() {
       this.autoControl = !this.autoControl;
+    },
+
+    //预警消息的发送
+    sendMsg(item) {
+      //查询有关该区域的预警消息
+      const result = this.messageList.find(msg => msg.areaName === item.name && msg.status === "warn");
+      
+      console.log(result);
+      //在低于预警水量时判断需不需要发送预警信息
+      if(item.lowWarn) {
+        
+        //现在没有生效预警信息，所以需要重新发送
+        if(!result) {
+          //发送预警消息
+          console.log(item);
+          this.sendWarn(item);
+        }
+      } else {
+        //在不低于预警水量时还要检查之前是否存在预警消息，如果有则把该消息的状态改为warned，代表已过期
+        if(result) {
+          this.modifyWarn(result);
+        }
+      }
+
+      this.$store.dispatch('getMessageList');
+    },
+
+    //发送预警消息
+    async sendWarn(item) {
+      const date = getDate();
+      const message = `区域 ${item.name} 水量低于预警水量，请尽早派遣员工进行处理！`
+      const msg = {
+        message,
+        status: 'warn',
+        date,
+        type: 'water',
+        areaName: item.name,
+        workerName: null
+      }
+      //将消息发送给服务器
+      console.log(msg);
+      
+      await reqAddMessage(msg);
+    },
+
+    //修改预警消息（让其过期）
+    async modifyWarn(msg) {
+      msg.status = 'warned';
+      console.log(msg);
+      
+      let result = await reqUpdateMessage(msg);
     }
   }
 }

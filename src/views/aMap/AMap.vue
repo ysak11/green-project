@@ -122,22 +122,24 @@ export default {
           }
 
 
-          //查询有关该区域的预警消息
-          const result = this.messageList.find(msg => msg.areaName === item.name && msg.status === 'warn');
+          // //查询有关该区域的预警消息
+          // const result = this.messageList.find(msg => msg.areaName === item.name && msg.status === "warn");
           // console.log(result);
-          //在低于预警水量时判断需不需要发送预警信息
-          if(item.lowWarn) {
-            //现在没有生效预警信息，所以需要重新发送
-            if(!result) {
-              //发送预警消息
-              this.sendWarn(item);
-            }
-          } else {
-            //在不低于预警水量时还要检查之前是否存在预警消息，如果有则把该消息的状态改为warned，代表已过期
-            if(result) {
-              this.modifyWarn(result);
-            }
-          }
+          // //在低于预警水量时判断需不需要发送预警信息
+          // if(item.lowWarn) {
+          //   //现在没有生效预警信息，所以需要重新发送
+          //   if(!result) {
+          //     //发送预警消息
+          //     console.log(item);
+              
+          //     this.sendWarn(item);
+          //   }
+          // } else {
+          //   //在不低于预警水量时还要检查之前是否存在预警消息，如果有则把该消息的状态改为warned，代表已过期
+          //   if(result) {
+          //     this.modifyWarn(result);
+          //   }
+          // }
 
           //覆盖物的面积（平方米）
           const area = polygon.getArea();
@@ -201,26 +203,30 @@ export default {
     },
 
     //发送预警消息
-    async sendWarn(item) {
-      const date = getDate();
-      const message = `区域 ${item.name} 水量低于预警水量，请尽早派遣员工进行处理！`
-      const msg = {
-        message,
-        status: 'warn',
-        date,
-        type: 'water',
-        areaName: item.name,
-        workerName: null
-      }
-      //将消息发送给服务器
-      await reqAddMessage(msg);
-    },
+    // async sendWarn(item) {
+    //   const date = getDate();
+    //   const message = `区域 ${item.name} 水量低于预警水量，请尽早派遣员工进行处理！`
+    //   const msg = {
+    //     message,
+    //     status: 'warn',
+    //     date,
+    //     type: 'water',
+    //     areaName: item.name,
+    //     workerName: null
+    //   }
+    //   //将消息发送给服务器
+    //   console.log(msg);
+      
+    //   await reqAddMessage(msg);
+    // },
 
-    //修改预警消息（让其过期）
-    async modifyWarn(msg) {
-      msg.status = 'warned';
-      await reqUpdateMessage(msg);
-    }
+    // //修改预警消息（让其过期）
+    // async modifyWarn(msg) {
+    //   msg.status = 'warned';
+    //   // console.log(msg);
+      
+    //   let result = await reqUpdateMessage(msg);
+    // }
   },
   mounted() {
     this.initMap();

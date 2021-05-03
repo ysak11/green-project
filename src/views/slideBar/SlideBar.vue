@@ -256,7 +256,8 @@ export default {
         status: 'solved',
         date,
         areaName: this.solveQuestion.areaName,
-        workerName: this.userInfo.username
+        workerName: this.userInfo.username,
+        imgs: this.solveQuestion.imgs
       }
       
       //发送请求更新信息状态

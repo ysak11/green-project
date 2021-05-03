@@ -41,9 +41,15 @@
               <li v-for="item in reverseList" :key="item._id" class="tip">
                 <span v-if="item.status === 'waitting' || item.status === 'invalid'">
                   {{`${item.date} 职工 ${item.workerName} 上报了区域 ${item.areaName} 存在的问题："${item.message}" `}}
+                  <div>
+                    <img v-for="(img, index) in item.imgs" :key="item._id + index" :src="img" alt="" class="photo">
+                  </div>
                 </span>
                 <span v-else-if="item.status === 'solved'">
                   {{`${item.date} 职工 ${item.workerName} 解决了区域 ${item.areaName} 存在的问题："${item.message}" `}}
+                  <div>
+                    <img v-for="(img, index) in item.imgs" :key="item._id + index" :src="img" alt="" class="photo">
+                  </div>
                 </span>
                 <span v-else-if="item.status === 'warn' || item.status === 'warned' || item.status === 'water'">
                   {{`${item.date}. ${item.message} `}}
@@ -281,7 +287,7 @@
               <span>本年度完成任务数： {{workerRec.length}}</span>
               <span>{{`(灌溉任务${waterNum}次，上报问题${subNum}次，其它类型任务${solveNum}次)`}}</span>
             </div>
-            <span class="status">状态：空闲中</span>
+            <span class="status">状态：{{worker.status === 'free' ? '空闲中' : '处理任务中'}}</span>
           </div>
 
           <h3>具体记录</h3>
@@ -292,9 +298,15 @@
                 <li v-for="item in workerRec" :key="item._id"  class="tip">
                   <span v-if="item.status === 'waitting' || item.status === 'invalid'">
                     {{`${item.date} 职工 ${item.workerName} 上报了区域 ${item.areaName} 存在的问题："${item.message}" `}}
+                    <div>
+                      <img v-for="(img, index) in item.imgs" :key="item._id + index" :src="img" alt="" class="photo">
+                    </div>
                   </span>
                   <span v-else-if="item.status === 'solved'">
                     {{`${item.date} 职工 ${item.workerName} 解决了区域 ${item.areaName} 存在的问题："${item.message}" `}}
+                    <div>
+                      <img v-for="(img, index) in item.imgs" :key="item._id + index" :src="img" alt="" class="photo">
+                    </div>
                   </span>
                   <span v-else-if="item.status === 'water'">
                     {{`${item.date}. ${item.message} `}}
@@ -431,6 +443,11 @@ export default {
         this.bscrollD.refresh();
       })
     },
+
+    //获取一个时间戳
+    getTime() {
+      return new Date();
+    }
   }
 }
 </script>
@@ -607,6 +624,12 @@ export default {
   }
   .nothing {
     margin: 12px;
+  }
+
+  .photo {
+    width: 80px;
+    height: 80px;
+    margin-right: 15px;
   }
   
   /* .button button::after {

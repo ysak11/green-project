@@ -61,7 +61,7 @@ export default {
       
       for(let i = 0; i < len; i++) {
         let temp = this.deviceList.filter(item => item.toArea === this.areaList[i].name);
-        console.log(temp);
+        // console.log(temp);
         if(temp.length !== 0) {
           this.areaList[i].equip = temp[0].name;
         } else {
@@ -109,8 +109,12 @@ export default {
       val = String(val.toFixed(2));
       //直接发送请求更新水量，等待结果返回后重新更新区域信息
       await reqWaterVal(item._id, val);
-      //发送消息到数据库存储
-      this.sendMsg(item, val);
+      //如果是灌溉设备灌溉的则不会发送消息
+      if(item.equip === '暂无') {
+        //发送消息到数据库存储
+        this.sendMsg(item, this.waterValue);
+      }
+
       //更新区域信息
       this.$store.dispatch('getAreaList');
       

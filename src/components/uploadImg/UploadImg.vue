@@ -57,6 +57,8 @@ export default {
       //闭包保存组件实例
       const that = this;
       reader.onload = function(e) {
+        console.log(that.$refs.pre);
+        
         //预览图片展示
         that.$refs.pre.src = this.result;
         that.preImg = true;
