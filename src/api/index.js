@@ -27,6 +27,9 @@ export const reqConfirm = (id, password) => ajax(BASEURL + '/user/password', {id
 //修改密码
 export const reqModifyPassword = (id, password) => ajax(BASEURL + '/user/modify', {id, password}, 'POST');
 
+//更新用户状态
+export const reqUpdateUser = (user) => ajax(BASEURL + '/user/update', user, 'POST');
+
 
 
 //发送添加区域请求

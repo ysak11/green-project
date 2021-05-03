@@ -7,6 +7,7 @@
         <span @click="backToCenter">回到原点</span>
         <span @click="showWater" v-if="userInfo.permission >= '2'">水量监控</span>
         <span @click="submitQuestion" v-if="userInfo.permission >= '2'" :class="{submitting: isSubmitting}" >问题上报</span>
+        <span @click="showTask" v-if="userInfo.permission >= '2'">我的任务</span>
         <span @click="addArea" v-if="userInfo.permission >= '3'" :class="{drawing: isDrawing}">添加绿化区域</span>
         <span @click="showInfo" v-if="userInfo.permission >= '3'">信息汇总</span>
         <span @click="showTime" v-if="userInfo.permission >= '3'">时间模拟</span>
@@ -31,6 +32,8 @@
     <water-control v-if="showControl" @closeWindow="closeWindow"/>
     <!-- 问题提交的窗口 -->
     <sub-question :item="item" v-if="showSubmit" @closeWindow="closeWindow"/>
+    <!-- 我的任务窗口 -->
+    <my-task v-if="isShowTask" @closeWindow="closeWindow"/>
     <!-- 信息汇总窗口 -->
     <info-collect v-if="showInfoWindow" @closeWindow="closeWindow"/>
     <!-- 时间模拟窗口 -->
@@ -44,6 +47,7 @@
 import AddInfo from 'components/addInfo/AddInfo';
 import WaterControl from 'components/waterControl/WaterControl';
 import SubQuestion from 'components/subQuestion/SubQuestion';
+import MyTask from 'components/myTask/MyTask';
 import InfoCollect from 'components/infoCollect/InfoCollect';
 import TimeImitate from 'components/timeImitate/TimeImitate';
 import ModifyPassword from 'components/modifyPassword/ModifyPassword';
@@ -57,6 +61,7 @@ export default {
     AddInfo,
     WaterControl,
     SubQuestion,
+    MyTask,
     InfoCollect,
     TimeImitate,
     ModifyPassword
@@ -68,6 +73,7 @@ export default {
       isDrawed: false,          //展示添加区域的信息窗口
       showControl: false,       //展示区域水量的窗口
       showSubmit: false,        //展示问题提交窗口
+      isShowTask: false,           //展示我的任务界面
       showInfoWindow: false,     //展示信息汇总窗口
       isShowTime: false,        //展示时间模拟窗口
       showModify: false,        //展示密码修改窗口
@@ -164,6 +170,7 @@ export default {
       this.isShowTime = false;
       this.showModify = false;
       this.showInfoWindow = false;
+      this.isShowTask = false;
 
       this.showSubmit = false;
       //在问题成功提交的情况下关闭问题上报功能
@@ -175,6 +182,11 @@ export default {
     //开启区域水量管理界面
     showWater() {
       this.showControl = true;
+    },
+
+    //开启我的任务界面
+    showTask() {
+      this.isShowTask = true;
     },
 
     //问题提交的功能
@@ -277,7 +289,7 @@ export default {
   }
 
   .left span {
-    padding-left: 50px;
+    padding-left: 25px;
     font-size: 28px;
     font-weight: bold;
     text-shadow: #130f40 ;
