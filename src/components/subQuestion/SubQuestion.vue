@@ -140,7 +140,7 @@ export default {
         // console.log(result.urlArr);
         let arr = result.urlArr;
         for(let i = 0, len = arr.length; i < len; i++) {
-          arr[i] = 'http://localhost:5000' + arr[i];
+          arr[i] = 'http://121.41.45.147:5000' + arr[i];
         }
         return arr;
       } else {

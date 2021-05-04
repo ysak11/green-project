@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // const BASEURL = 'http://localhost:5000';
-// const BASEURL = 'http://121.41.45.147:80/apis'; 
+// const BASEURL = 'http://121.41.45.147:5000'; 
 const BASEURL = '/apis'; 
 
 export const reqUpload = (data) => {

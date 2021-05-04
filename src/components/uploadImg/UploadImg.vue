@@ -80,7 +80,7 @@ export default {
       //如果图片上传成功
       if(result.status === 0 ) {
         //设置图片的请求路径
-        const imgPath = 'http://localhost:5000' + result.url;
+        const imgPath = 'http://121.41.45.147:5000' + result.url;
         this.item.imgPath = imgPath;
         //更新区域信息
         await reqArea(this.item);
