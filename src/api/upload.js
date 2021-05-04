@@ -1,8 +1,12 @@
 import axios from 'axios';
 
+// const BASEURL = 'http://localhost:5000';
+// const BASEURL = 'http://121.41.45.147:80/apis'; 
+const BASEURL = '/apis'; 
+
 export const reqUpload = (data) => {
   return new Promise((resolve, reject) => {
-    const promise = axios.post('http://localhost:5000/upload/img', data, {
+    const promise = axios.post(BASEURL + '/upload/img', data, {
       headers: {
         'Content-Type': 'multipart/form-data',
       }
@@ -18,7 +22,7 @@ export const reqUpload = (data) => {
 
 export const reqMulUpload = (array) => {
   return new Promise((resolve, reject) => {
-    const promise = axios.post('http://localhost:5000/upload/imgs', array, {
+    const promise = axios.post(BASEURL + '/upload/imgs', array, {
       headers: {
         'Content-Type': 'multipart/form-data',
       }

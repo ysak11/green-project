@@ -39,7 +39,7 @@
           <div class="content">
             <ul>
               <li v-for="item in reverseList" :key="item._id" class="tip">
-                <span v-if="item.status === 'waitting' || item.status === 'invalid'">
+                <span v-if="item.status === 'waitting' || item.status === 'invalid' || item.status === 'solving'">
                   {{`${item.date} 职工 ${item.workerName} 上报了区域 ${item.areaName} 存在的问题："${item.message}" `}}
                   <div>
                     <img v-for="(img, index) in item.imgs" :key="item._id + index" :src="img" alt="" class="photo">
@@ -296,7 +296,7 @@
             <div class="detail-content">
               <ul v-show="workerRec.length !== 0">
                 <li v-for="item in workerRec" :key="item._id"  class="tip">
-                  <span v-if="item.status === 'waitting' || item.status === 'invalid'">
+                  <span v-if="item.status === 'waitting' || item.status === 'invalid' || item.status === 'solving'">
                     {{`${item.date} 职工 ${item.workerName} 上报了区域 ${item.areaName} 存在的问题："${item.message}" `}}
                     <div>
                       <img v-for="(img, index) in item.imgs" :key="item._id + index" :src="img" alt="" class="photo">
