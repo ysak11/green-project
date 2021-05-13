@@ -28,8 +28,16 @@
     <!-- 输入窗口 -->
     <div class="shape" v-if="showInput">
       <div class="input">
-        <div>增加水量：</div>
-        <input type="text" v-model="waterValue">
+        <div class="input-header">灌溉水量：</div>
+        <div class="watcher">
+          <div>水表读数 ：</div>
+          <input type="text" v-model="watcher">(m³)
+        </div>
+        <div class="fact">
+          <div class="fact-text">实际水量：</div>
+          <div class="fact-val">{{waterValue || 0}}  升</div>
+        </div>
+        
         <button class="confirm" @click="water(obj)">确定</button>
         <button class="cancel" @click="closeInput()">取消</button>
       </div>
@@ -51,11 +59,22 @@ export default {
     return {
       showInput: false,       //展示增加水量窗口
       obj: null,              //要增加水量的区域
-      waterValue: '',         //浇水量
+      watcher: '',            //水表读数
+      waterValue: '',         //灌溉量
+    }
+  },
+  watch: {
+    watcher: {
+      handler(newVal) {
+        this.waterValue = Number(newVal) * 1000;
+      }
     }
   },
   computed: {
     ...mapState(['areaList', 'userInfo', 'deviceList']),
+    // waterValue() {
+    //   return Number(this.watcher) * 1000; 
+    // },
     showList() {
       let len = this.areaList.length;
       
@@ -253,7 +272,7 @@ export default {
     transform: translate(-50%, -50%);
 
     width: 280px;
-    height: 120px;
+    height: 170px;
     box-sizing: border-box;
     padding: 10px;
 
@@ -261,12 +280,27 @@ export default {
     background-color: rgba(52, 73, 94,1.0);
 
   }
+  
+  .input-header {
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  .watcher {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+  }
 
-  .input input {
-    display: block;
-    width: 230px;
-    height: 25px;
+  .watcher div{
+    flex: 1;
+    width: 100px;
+  }
+
+  .watcher input {
+    width: 90px;
+    height: 22px;
     margin-top: 5px;
+    margin-right: 5px;
     padding: 2px 8px;
     border-radius: 4px;
   }
@@ -280,6 +314,21 @@ export default {
     outline: none;
     border-radius: 4px;
     cursor: pointer;
+  }
+
+  .fact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-right: 4px;
+  }
+
+  .fact-text {
+
+  }
+
+  .fact-val {
+
   }
 
   .confirm {

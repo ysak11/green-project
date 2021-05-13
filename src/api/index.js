@@ -1,8 +1,8 @@
 import ajax from './ajax';
 
-// const BASEURL = 'http://localhost:5000';
+const BASEURL = 'http://localhost:5000';
 // const BASEURL = 'http://121.41.45.147:80'; 
-const BASEURL = '/apis'; 
+// const BASEURL = '/apis'; 
 
 
 //发送登录请求
@@ -81,7 +81,7 @@ export const reqAddMessage = (obj) => ajax(BASEURL + '/message/add', obj, 'POST'
 export const reqUpdateMessage = (obj) => ajax(BASEURL + '/message/update', obj, 'POST');
 
 //查找信息
-export const reqFindMessage = () => ajax(BASEURL + '/message/update', obj, 'POST');
+// export const reqFindMessage = () => ajax(BASEURL + '/message/update', obj, 'POST');
 
 
 //添加新设备

@@ -15,6 +15,27 @@
     <weather-info/>
     <!-- 地图容器 -->
     <a-map/>
+
+    <!-- 图例 -->
+    <div class="sign">
+      <div class="head">图例</div>
+      <div class="type">
+        <div class="color" style="background-color: #fd79a8"></div>
+        <div class="text">观赏植株</div>
+      </div>
+      <div class="type">
+        <div class="color" style="background-color: #55efc4"></div>
+        <div class="text">草坪</div>
+      </div>
+      <div class="type">
+        <div class="color" style="background-color: #27ae60"></div>
+        <div class="text">行道树</div>
+      </div>
+      <div class="type">
+        <div class="color" style="background-color: red"></div>
+        <div class="text">报警区域</div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -121,5 +142,47 @@ export default {
     width: 300px;
     height: 330px;
     overflow: hidden;
+  }
+
+  .sign {
+    position: fixed;
+    right: 50px;
+    bottom: 30px;
+    width: 160px;
+    height: 200px;
+    background-color: #fff;
+    z-index: 2;
+    border: 2px solid black;
+    border-radius: 6px;
+    box-sizing: border-box;
+    padding: 15px;
+    
+  }
+
+  .head {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+
+  .type { 
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    height: 20px;
+    line-height: 20px;
+    font-size: 12px;
+    margin: 12px 0;
+  }
+
+  .color {
+    height: 100%;
+    width: 50px;
+  }
+
+  .text {
+    /* display: flex;
+    justify-content: space-between; */
+    text-align:justify
   }
 </style>
