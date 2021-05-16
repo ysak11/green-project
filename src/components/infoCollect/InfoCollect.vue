@@ -52,7 +52,7 @@
                   </div>
                 </span>
                 <span v-else-if="item.status === 'warn' || item.status === 'warned' || item.status === 'water'">
-                  {{`${item.date}. ${item.message} `}}
+                  {{`${item.date} ${item.message} `}}
                 </span>
               </li>
             </ul>
@@ -284,7 +284,15 @@
           <div class="content-top">
             <div class="name">职工名称： {{worker.username}}</div>
             <div class="finish">
-              <span>本年度完成任务数： {{workerRec.length}}</span>
+              <span>时间段： 
+                <select name="type" v-model="range" class="selectContent">
+                  <option :value="0" selected>所有</option>
+                  <option :value="1">一个月</option>
+                  <option :value="2">半年内</option>
+                  <option :value="3">一年内</option>
+                </select>
+              </span>
+              <span>完成任务数： {{workerRec.length}}</span>
               <span>{{`(灌溉任务${waterNum}次，上报问题${subNum}次，其它类型任务${solveNum}次)`}}</span>
             </div>
             <span class="status">状态：{{worker.status === 'free' ? '空闲中' : '处理任务中'}}</span>
@@ -333,6 +341,7 @@ import { mapState } from 'vuex';
 import BScroll from 'better-scroll';
 
 import { reqUserList, reqMessageList } from '@/api';
+import { dateRange } from '@/utils';
 
 export default {
   name: "InfoCollect",
@@ -345,6 +354,7 @@ export default {
       bscrollD: null,           //具体情况的滚动插件
       activeId: '',             //选中的职工的id
       worker: {},               //选中的职工
+      range: 0,                 //选中时间段
     }
   },
   computed: {
@@ -366,8 +376,17 @@ export default {
       return this.messageList.filter(item => item.status === 'solved').length;
     },
     //职工的记录(注意是反转后的)
+    workerRecList() {
+      return this.reverseList.filter(item => item.workerName === this.worker.username && item.status !== 'solving');
+    },
+    
     workerRec() {
-      return this.reverseList.filter(item => item.workerName === this.worker.username);
+      switch(this.range) {
+        case 0: return this.workerRecList; break;
+        case 1: return this.workerRecList.filter(item => dateRange(item.date, 1)); break;
+        case 2: return this.workerRecList.filter(item => dateRange(item.date, 2)); break;
+        case 3: return this.workerRecList.filter(item => dateRange(item.date, 3)); break;
+      }
     },
     //职工灌溉任务次数
     waterNum() {
@@ -447,7 +466,7 @@ export default {
     //获取一个时间戳
     getTime() {
       return new Date();
-    }
+    },
   }
 }
 </script>
@@ -582,7 +601,7 @@ export default {
 
   .content-top {
     width: 100%;
-    height: 110px;
+    height: 140px;
     position: relative;
   }
 
@@ -600,6 +619,13 @@ export default {
     flex-direction: column;
   }
 
+  .selectContent {
+    width: 100px;
+    text-align: center;
+    border: none;
+    outline: none;
+  }
+
   .finish span {
     padding-top: 10px;
   }
@@ -613,7 +639,7 @@ export default {
 
   .detail {
     width: 100%;
-    height: 280px;
+    height: 250px;
     background-color: rgba(255, 255, 255, .3);
     position: relative;
     overflow: hidden;

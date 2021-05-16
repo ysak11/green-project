@@ -55,3 +55,69 @@ export function getDate() {
   return `${year}/${twoFix(month)}/${twoFix(day)} ${twoFix(hour)}:${twoFix(minutes)}:${twoFix(seconds)}`;
 }
 
+
+//测定时间范围
+export function dateRange(time, mode) {
+
+  //对time的格式进行处理  2021/05/13 22:41:47
+  let temp1 = time.split(' '); // 2021/05/13
+  let temp2 = temp1[0].split('/');  // 2021   05   13
+
+  //给出的目标的时间
+  let year = temp2[0];
+  let month = temp2[1];
+  let day = temp2[2];
+  let target = '' + year + month + day;
+  // console.log(target);
+  
+
+  //获取当前的日期
+  const date = new Date();
+  const nowYear = date.getFullYear();
+  const nowMonth = twoFix(date.getMonth() + 1);
+  const nowDay = twoFix(date.getDate());
+  let now = '' + nowYear + nowMonth + nowDay;
+  // console.log(now);
+
+  
+  //最早的日期
+  let old = '';
+  let oldYear = nowYear;
+  let oldMonth = parseInt(date.getMonth() + 1);
+
+  //一个月内
+  if(mode === 1) {
+    oldMonth = oldMonth - 1;
+    //此时应为上一年的12月
+    if(oldMonth <= 0) {
+      oldMonth = 12;
+      oldYear--;
+    }
+  } else if(mode === 2) {
+    //半年内
+    oldMonth = oldMonth - 6;
+    if(oldMonth <= 0) {
+      oldMonth = 12 + oldMonth;
+      oldYear--;
+    }
+  } else if(mode === 3) {
+    //一年内
+    oldYear--;
+  }
+
+
+  oldMonth = twoFix(oldMonth);
+  old = '' + oldYear + oldMonth + nowDay;
+  // console.log(old);
+  
+  
+  //在指定的范围内，将字符串化为数字比较大小
+  if(parseInt(old) <= parseInt(target) && parseInt(now) >= parseInt(target)) {
+    return true;
+  } 
+  return false;
+  
+}
+
+
+
