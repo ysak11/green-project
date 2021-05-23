@@ -10,7 +10,7 @@
         <span @click="showTask" v-if="userInfo.permission >= '2'">我的任务</span>
         <span @click="addArea" v-if="userInfo.permission >= '3'" :class="{drawing: isDrawing}">添加绿化区域</span>
         <span @click="showInfo" v-if="userInfo.permission >= '3'">信息汇总</span>
-        <span @click="showTime" v-if="userInfo.permission >= '3'">时间模拟</span>
+        <!-- <span @click="showTime" v-if="userInfo.permission >= '3'">时间模拟</span> -->
         <span @click="toManager" v-if="userInfo.permission >= '3'">后台管理</span>
 
     </div>

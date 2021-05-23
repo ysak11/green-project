@@ -1,31 +1,33 @@
 <template>
   <div class="water-control" @click="closeWindow" ref="warpper">
-    
     <div class="content">
 
       <div class="header">
-        <span class="areaName">名称</span>
-        <div>种类</div>
-        <div>当前水量</div>
-        <div>水量报警值</div>
-        <div>水量上限</div>
-        <div>灌溉设备</div>
-        <span class="action">操作</span>
+        <button @click="imitateHour">模拟一个小时</button>
+        <button @click="imitateDay">模拟一天</button>
+        <button @click="autoWater" style="margin-left: 50px">自动灌溉： {{autoControl ? '开' : '关'}}</button>
+        <span class="text">(面积 * 降水量) - (每日耗水量 * 1/24 * 时间比率 * 温度比率)</span>
       </div>
 
       <div class="message" v-for="item in showList" :key="item._id">
         <span class="name">{{item.name}}</span>
-        <div>{{item.type}}</div>
-        <div :class="{'warn': item.lowWarn}">{{item.waterQuantity}}</div>
-        <div>{{item.warnValue}}</div>
-        <div>{{item.waterTop}}</div>
-        <div :class="{'warn':item.equip === '暂无'}">{{item.equip}}</div>
+        <div>种类: {{item.type}}</div>
+        <div>
+          <div>面积：</div>{{item.area}} ㎡</div>
+        <div :class="{'warn': item.lowWarn}">当前水量: {{waterQuantity(item.waterQuantity, item.waterTop)}}</div>
+        <div>每日耗水量: {{item.hourConsume}}</div>
+        <div>水量报警值: {{item.warnValue}}</div>
+        <div>水量上限: {{item.waterTop}}</div>
+        <div>
+          <div>灌溉设备：</div>
+          <div :class="{'warn':item.equip === '暂无'}">{{item.equip ? item.equip : ''}}</div>
+        </div>
         <button class="btn-water" @click="openInput(item)">灌溉</button>
       </div>
 
     </div>
-  
-    <!-- 输入窗口 -->
+
+        <!-- 输入窗口 -->
     <div class="shape" v-if="showInput">
       <div class="input">
         <div class="input-header">灌溉水量：</div>
@@ -42,21 +44,23 @@
         <button class="cancel" @click="closeInput()">取消</button>
       </div>
     </div>
-
   </div>
 </template>
 
 <script>
 import { mapState } from 'vuex';
 
-import { getAreaList } from 'store/actions';
-import { reqWaterVal, reqAddMessage } from '@/api';
+import { reqArea, reqAddMessage, reqUpdateMessage, reqWaterVal } from '@/api';
 import { getDate } from '@/utils';
+
 
 export default {
   name: "WaterControl",
   data() {
     return {
+      timeRatios: null,       //时间比率
+      temRatios: null,        //温度比率
+      autoControl: true,     //自动灌溉开关
       showInput: false,       //展示增加水量窗口
       obj: null,              //要增加水量的区域
       watcher: '',            //水表读数
@@ -71,10 +75,30 @@ export default {
     }
   },
   computed: {
-    ...mapState(['areaList', 'userInfo', 'deviceList']),
-    // waterValue() {
-    //   return Number(this.watcher) * 1000; 
-    // },
+    ...mapState(['areaList', 'weatherInfo', 'ratioList', 'deviceList', 'messageList']),
+    //控制水量上限和小数个数
+    waterQuantity() {
+      return (Quantity, top) => {
+        let water = Number(Quantity).toFixed(2);
+        return water <= Number(top) ? water : top;
+      }
+    },
+
+
+    equipAreaList() {
+      let len = this.areaList.length;
+      
+      for(let i = 0; i < len; i++) {
+        let temp = this.deviceList.filter(item => item.toArea === this.areaList[i].name);
+        if(temp.length !== 0) {
+          this.areaList[i].equip = temp;
+        } else {
+          this.areaList[i].equip = null;
+        }
+      }
+      return this.areaList;
+    },
+
     showList() {
       let len = this.areaList.length;
       
@@ -91,6 +115,10 @@ export default {
     }
   },
   created() {
+    //获得时间和温度的比率数组
+    this.timeRatios = this.ratioList.find((item) => item.name === 'time');
+    this.temRatios = this.ratioList.find((item) => item.name === 'temperature');
+    //获取设备列表
     this.$store.dispatch('reqDeviceList');
   },
   methods: {
@@ -113,10 +141,10 @@ export default {
     closeInput() {
       this.showInput = false;
       //清空浇水量
-      this.waterValue = '';
+      this.watcher = '';
     },
 
-    //浇水功能
+    //灌溉功能
     async water(item) {
       //浇水量加上现有水量
       let val = Number(this.waterValue) + Number(item.waterQuantity);
@@ -131,7 +159,7 @@ export default {
       //如果是灌溉设备灌溉的则不会发送消息
       if(item.equip === '暂无') {
         //发送消息到数据库存储
-        this.sendMsg(item, this.waterValue);
+        this.sendWaterMsg(item, this.waterValue);
       }
 
       //更新区域信息
@@ -141,8 +169,161 @@ export default {
       this.closeInput();
     },
 
+    //模拟一个小时
+    async imitateHour() {
+      //获得当前小时、温度、降水量
+      const hour = new Date().getHours();
+      const tem = Number(this.weatherInfo.temp);
+      const precip = this.weatherInfo.precip;
+
+      //获取对应的时间和温度比率
+      const timeRatio = this.timeRatios.ratio[hour];
+      const temRatio = this.temRatios.ratio[tem + 20];
+      // console.log(this.timeRatio + "   " + this.temRatio);
+      
+      this.equipAreaList.forEach(item => {
+        //耗水量      （面积 * 降水量） - （每日耗水量 * 1/24 * 时间比率 * 温度比率)
+        const consume = (item.area * precip) - (item.hourConsume * (1 / 24) * timeRatio * temRatio);
+        // const consume = (item.area * 1) - (item.hourConsume * (1 / 24) * timeRatio * temRatio);
+        // console.log(consume);
+        
+        let nowWater = Number(item.waterQuantity) + consume;
+        
+        //如果低于预警水量且配备有自动灌溉设备则调用设备自动灌溉，还需要开启自动灌溉开关
+        if(this.autoControl && nowWater <= parseInt(item.warnValue) && item.equip) {
+          // console.log(item.equip);
+          
+          item.equip.forEach(item => {
+            nowWater += parseInt(item.setting);
+          })
+        }
+
+        //报警信息
+        this.sendMsg(item);
+
+
+        //最低水量需大于等于0,最高水量小于等于top
+        item.waterQuantity = nowWater >= 0 ? nowWater : 0;
+        item.waterQuantity = item.waterQuantity <= item.waterTop ? Number(item.waterQuantity) : Number(item.waterTop);
+
+        item.waterQuantity = String(item.waterQuantity.toFixed(2));
+        //更新区域
+        reqArea(item);
+        //更新区域信息
+        this.$store.dispatch('getAreaList');
+      })
+    },
+
+    //模拟一天
+    imitateDay() {
+      //获得当前小时数和未来24小时天气情况
+      let hour = new Date().getHours();
+      const future = this.weatherInfo.future;
+
+      //进行24次一小时模拟
+      for(let i = 0; i < 24; i++) {
+        //获得温度、降水量
+        const tem = Number(future[i].temp);
+        const precip = future[i].precip;
+
+        //获取对应的时间和温度比率
+        const timeRatio = this.timeRatios.ratio[hour];
+        const temRatio = this.temRatios.ratio[tem + 20];
+
+        this.areaList.forEach(item => {
+          //耗水量      （面积 * 降水量） - （每日耗水量 * 1/24 * 时间比率 * 温度比率)
+          const consume = (item.area * precip) - (item.hourConsume * (1 / 24) * timeRatio * temRatio);
+          // const consume = (item.area * 1) - (item.hourConsume * (1 / 24) * timeRatio * temRatio);
+          console.log(consume);
+          
+          let nowWater = Number(item.waterQuantity) + consume;
+
+          //如果低于预警水量且配备有自动灌溉设备则调用设备自动灌溉，还需要开启自动灌溉开关
+          if(this.autoControl && nowWater <= parseInt(item.warnValue) && item.equip) {
+            console.log(item.equip);
+            
+            item.equip.forEach(item => {
+              nowWater += parseInt(item.setting);
+            })
+          }
+
+          //报警信息
+          this.sendMsg(item);
+          
+
+          //最低水量需大于等于0,最高水量小于等于top
+          item.waterQuantity = nowWater >= 0 ? nowWater : 0;
+          item.waterQuantity = item.waterQuantity <= item.waterTop ? Number(item.waterQuantity) : Number(item.waterTop);
+        })
+
+        //小时数加一，大于23点时来到第二天
+        hour++;
+        if(hour > 23) {
+          hour = 0;
+        }
+      }
+
+      //24小时循环完后再发送更新请求
+      this.areaList.forEach(item => {
+        item.waterQuantity = String(item.waterQuantity.toFixed(2));
+        //更新区域
+        reqArea(item);
+      })
+      //更新区域信息
+      this.$store.dispatch('getAreaList');
+    },
+
+
+    //自动灌溉开关
+    autoWater() {
+      this.autoControl = !this.autoControl;
+    },
+
+    //预警消息的发送
+    sendMsg(item) {
+      //查询有关该区域的预警消息
+      const result = this.messageList.find(msg => msg.areaName === item.name && msg.status === "warn");
+      
+      console.log(result);
+      //在低于预警水量时判断需不需要发送预警信息
+      if(item.lowWarn) {
+        
+        //现在没有生效预警信息，所以需要重新发送
+        if(!result) {
+          //发送预警消息
+          console.log(item);
+          this.sendWarn(item);
+        }
+      } else {
+        //在不低于预警水量时还要检查之前是否存在预警消息，如果有则把该消息的状态改为warned，代表已过期
+        if(result) {
+          this.modifyWarn(result);
+        }
+      }
+
+      this.$store.dispatch('getMessageList');
+    },
+
+    //发送预警消息
+    async sendWarn(item) {
+      const date = getDate();
+      const message = `区域 ${item.name} 水量低于预警水量，请尽早派遣员工进行处理！`
+      const msg = {
+        message,
+        status: 'warn',
+        date,
+        type: 'water',
+        areaName: item.name,
+        workerName: null
+      }
+      //将消息发送给服务器
+      console.log(msg);
+      
+      await reqAddMessage(msg);
+    },
+
     //发送浇水消息到数据库
-    async sendMsg(item, val) {
+    async sendWaterMsg(item, val) {
       const date = getDate();
       const message = `职工 ${this.userInfo.username} 为区域 ${item.name} 浇水${val}升`
       const msg = {
@@ -154,6 +335,14 @@ export default {
       }
       //将消息发送给服务器
       await reqAddMessage(msg);
+    },
+
+    //修改预警消息（让其过期）
+    async modifyWarn(msg) {
+      msg.status = 'warned';
+      console.log(msg);
+      
+      let result = await reqUpdateMessage(msg);
     }
   }
 }
@@ -173,37 +362,43 @@ export default {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 750px;
-    height: 500px;
+    width: 980px;
+    height: 550px;
     overflow: hidden;
 
-    padding: 40px;
+    padding: 0 40px 40px 40px;
     box-sizing: border-box;
     background-color: #34495e;
     border-radius: 8px;
   }
 
   .header {
-    display: flex;
-    margin-bottom: 12px;
+    position: relative;
+    padding-bottom: 10px;
+    margin: 20px 0;
+    border-bottom: 1px solid #fff;
   }
 
-  .areaName {
-    width: 40px;
-    display: flex;
-    justify-content: center;
+  .header button {
+    display: inline-block;
+    width: 120px;
+    height: 30px;
+    border-radius: 6px;
+    margin-right: 15px;
+    cursor: pointer;
+    color: #fff;
+    background-color: #16a085;
   }
 
-  .action {
-    width: 70px;
-    display: flex;
-    justify-content: center;
+  .header button:hover {
+    background-color: #1abc9c;
   }
 
-  .header div {
-    flex: 1;
-    display: flex;
-    justify-content: center;
+  .text {
+    position: absolute;
+    bottom: 1px;
+    right: 0;
+    font-size: 14px;
   }
 
   .message {
@@ -214,33 +409,11 @@ export default {
     margin-bottom: 5px;
   }
 
-  .name {
-    height: 100%;
-    width: 40px;
-    display: flex;
-    background-color: #bdc3c7;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .warn {
-    font-weight: bold;
-    color: red;
-  }
-
-  .message div {
-    flex: 1;
-    font-size: 12px;
-    padding-left: 15px;
-    display: flex;
-    justify-content: center;
-  }
-
   .btn-water {
     display: block;
     width: 70px;
     height: 32px;
-    margin-left: 5px;
+    margin: 0 15px;
     background-color: #27ae60;
     color: #2c3e50;
 
@@ -255,7 +428,27 @@ export default {
     background-color: rgba(46, 204, 113,1.0);
   }
 
-  .shape {
+  .warn {
+    font-weight: bold;
+    color: red;
+  }
+
+  .name {
+    height: 100%;
+    width: 40px;
+    display: flex;
+    background-color: #bdc3c7;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .message div {
+    flex: 1;
+    font-size: 14px;
+    padding-left: 15px;
+  }
+
+    .shape {
     position: fixed;
     width: 100vw;
     height: 100vh;
@@ -348,4 +541,5 @@ export default {
   .cancel:hover {
     background-color: #ff7875;
   }
+
 </style>
